@@ -1,9 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+import 'package:assets_dashboard/core/config/firebase_config.dart';
 import 'package:assets_dashboard/core/theme/app_theme.dart';
 import 'package:assets_dashboard/widgets/sidebar_navigation.dart';
 import 'package:assets_dashboard/screens/home/home_screen.dart';
+import 'package:assets_dashboard/screens/assets/assets_screen.dart';
+import 'package:assets_dashboard/providers/asset_provider.dart';
+import 'package:assets_dashboard/providers/branch_provider.dart';
+import 'package:assets_dashboard/providers/employee_provider.dart';
+import 'package:assets_dashboard/providers/vendor_provider.dart';
+import 'package:assets_dashboard/providers/settings_provider.dart';
+import 'package:assets_dashboard/providers/dashboard_provider.dart';
 
-void main() {
+void main() async {
+  // Ensure Flutter binding is initialized
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: FirebaseOptions(
+      apiKey: FirebaseConfig.apiKey,
+      appId: FirebaseConfig.appId,
+      messagingSenderId: FirebaseConfig.messagingSenderId,
+      projectId: FirebaseConfig.projectId,
+      storageBucket: FirebaseConfig.storageBucket,
+    ),
+  );
+
   runApp(const MyApp());
 }
 
@@ -12,11 +36,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Assets Dashboard',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      home: const MainLayout(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AssetProvider()),
+        ChangeNotifierProvider(create: (_) => BranchProvider()),
+        ChangeNotifierProvider(create: (_) => EmployeeProvider()),
+        ChangeNotifierProvider(create: (_) => VendorProvider()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => DashboardProvider()),
+      ],
+      child: MaterialApp(
+        title: 'Assets Dashboard',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        home: const MainLayout(),
+      ),
     );
   }
 }
@@ -61,7 +95,7 @@ class _MainLayoutState extends State<MainLayout> {
       case 0:
         return const HomeScreen();
       case 1:
-        return _buildPlaceholderScreen('Assets');
+        return const AssetsScreen();
       case 2:
         return _buildPlaceholderScreen('Branches');
       case 3:
@@ -82,23 +116,23 @@ class _MainLayoutState extends State<MainLayout> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.construction_outlined,
-            size: 64,
-            color: Colors.grey[400],
-          ),
+          // Icon(
+          //   Icons.construction_outlined,
+          //   size: 64,
+          //   color: Colors.grey[400],
+          // ),
           const SizedBox(height: 16),
           Text(
             '$title Page',
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 8),
-          Text(
-            'Coming in Phase 2',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
-            ),
-          ),
+          // Text(
+          //   'Coming in Phase 2',
+          //   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          //     color: Colors.grey[600],
+          //   ),
+          // ),
         ],
       ),
     );

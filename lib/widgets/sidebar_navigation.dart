@@ -137,14 +137,14 @@ class SidebarNavigation extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Admin User',
+                        'Profile',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
-                      Text(
-                        'admin@company.com',
-                        style: Theme.of(context).textTheme.bodySmall,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      // Text(
+                      //   'admin@company.com',
+                      //   style: Theme.of(context).textTheme.bodySmall,
+                      //   overflow: TextOverflow.ellipsis,
+                      // ),
                     ],
                   ),
                 ),
