@@ -8,14 +8,14 @@ Assets Dashboard is a modern enterprise asset management system built with Flutt
 
 ## Features
 
-### 📊 Dashboard & Analytics
+###  Dashboard & Analytics
 
 - **Real-time Statistics**: Live dashboard displaying total assets, assigned assets, available assets, assets under repair, and upcoming warranty expirations
 - **Branch Filtering**: Filter dashboard statistics by specific branches or view all branches
 - **Visual Analytics**: Branch comparison charts and quick stats overview
 - **Warranty Tracking**: Automatic monitoring of warranties expiring within 30 days
 
-### 🏢 Asset Management
+###  Asset Management
 
 - **Comprehensive Asset Tracking**: Manage assets with detailed information including:
   - Asset ID, name, category, and cost
@@ -34,7 +34,7 @@ Assets Dashboard is a modern enterprise asset management system built with Flutt
 - **Branch Details**: Track branch name, location, manager, contact information, and employee count
 - **Branch Analytics**: Monitor asset distribution across branches
 
-### 👥 Employee Management
+###  Employee Management
 
 - **Employee Directory**: Comprehensive employee information management
 - **Direct Operations**: Add new employees and delete existing records with confirmation dialogs
@@ -283,31 +283,4 @@ The dashboard automatically calculates and displays:
 - Assets under repair
 - Upcoming warranty expirations (within 30 days)
 
-## Platform Support
 
-- ✅ Web (Primary target)
-- ✅ Windows
-- ✅ macOS
-- ✅ Linux
-- ✅ Android
-- ✅ iOS
-
-## Version
-
-**Current Version**: 1.0.0+1
-
-## License
-
-This project is private and not published to pub.dev.
-
-## Future Enhancements
-
-- Advanced reporting with charts and graphs
-- Export functionality (PDF, Excel)
-- User authentication and role-based access control
-- Asset depreciation tracking
-- Maintenance scheduling
-- Document attachment support
-- Mobile app optimization
-- Push notifications for warranty expiration
-- Audit trail and activity logs
