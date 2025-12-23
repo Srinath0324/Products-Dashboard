@@ -3,26 +3,25 @@ import 'package:provider/provider.dart';
 import 'package:assets_dashboard/core/constants/app_colors.dart';
 import 'package:assets_dashboard/core/constants/app_sizes.dart';
 import 'package:assets_dashboard/core/utils/date_formatter.dart';
-import 'package:assets_dashboard/data/models/branch_model.dart';
-import 'package:assets_dashboard/providers/branch_provider.dart';
-import 'package:assets_dashboard/screens/branches/add_branch_screen.dart';
-import 'package:assets_dashboard/screens/branches/edit_branch_screen.dart';
+import 'package:assets_dashboard/data/models/vendor_model.dart';
+import 'package:assets_dashboard/providers/vendor_provider.dart';
+import 'package:assets_dashboard/screens/vendors/add_vendor_screen.dart';
 
-/// Branches Screen - Branch Data Table
-class BranchesScreen extends StatefulWidget {
-  const BranchesScreen({super.key});
+/// Vendors Screen - Vendor Data Table
+class VendorsScreen extends StatefulWidget {
+  const VendorsScreen({super.key});
 
   @override
-  State<BranchesScreen> createState() => _BranchesScreenState();
+  State<VendorsScreen> createState() => _VendorsScreenState();
 }
 
-class _BranchesScreenState extends State<BranchesScreen> {
+class _VendorsScreenState extends State<VendorsScreen> {
   @override
   void initState() {
     super.initState();
-    // Load branches on init
+    // Load vendors on init
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<BranchProvider>().streamBranches();
+      context.read<VendorProvider>().streamVendors();
     });
   }
 
@@ -30,17 +29,17 @@ class _BranchesScreenState extends State<BranchesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Consumer<BranchProvider>(
-        builder: (context, branchProvider, child) {
+      body: Consumer<VendorProvider>(
+        builder: (context, vendorProvider, child) {
           // Show loading indicator
-          if (branchProvider.isLoading && branchProvider.branches.isEmpty) {
+          if (vendorProvider.isLoading && vendorProvider.vendors.isEmpty) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
 
           // Show error message
-          if (branchProvider.error != null && branchProvider.branches.isEmpty) {
+          if (vendorProvider.error != null && vendorProvider.vendors.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -52,19 +51,19 @@ class _BranchesScreenState extends State<BranchesScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Error loading branches',
+                    'Error loading vendors',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    branchProvider.error!,
+                    vendorProvider.error!,
                     style: Theme.of(context).textTheme.bodyMedium,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      branchProvider.loadBranches();
+                      vendorProvider.loadVendors();
                     },
                     child: const Text('Retry'),
                   ),
@@ -83,7 +82,7 @@ class _BranchesScreenState extends State<BranchesScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Branches List',
+                      'Vendor List',
                       style: Theme.of(context).textTheme.displayMedium?.copyWith(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
@@ -94,7 +93,7 @@ class _BranchesScreenState extends State<BranchesScreen> {
                         await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const AddBranchScreen(),
+                            builder: (context) => const AddVendorScreen(),
                           ),
                         );
                       },
@@ -105,7 +104,7 @@ class _BranchesScreenState extends State<BranchesScreen> {
                         ),
                       ),
                       icon: const Icon(Icons.add, size: 18),
-                      label: const Text('Add Branch'),
+                      label: const Text('Add Vendor'),
                     ),
                   ],
                 ),
@@ -113,7 +112,7 @@ class _BranchesScreenState extends State<BranchesScreen> {
                 const SizedBox(height: AppSizes.spacing32),
 
                 // Data Table
-                _buildDataTable(branchProvider),
+                _buildDataTable(vendorProvider),
               ],
             ),
           );
@@ -122,10 +121,10 @@ class _BranchesScreenState extends State<BranchesScreen> {
     );
   }
 
-  Widget _buildDataTable(BranchProvider branchProvider) {
-    final branches = branchProvider.branches;
+  Widget _buildDataTable(VendorProvider vendorProvider) {
+    final vendors = vendorProvider.vendors;
 
-    if (branches.isEmpty) {
+    if (vendors.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(AppSizes.spacing32),
         decoration: BoxDecoration(
@@ -140,18 +139,18 @@ class _BranchesScreenState extends State<BranchesScreen> {
           child: Column(
             children: [
               const Icon(
-                Icons.business_outlined,
+                Icons.store_outlined,
                 size: 64,
                 color: AppColors.gray400,
               ),
               const SizedBox(height: 16),
               Text(
-                'No branches found',
+                'No vendors found',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 8),
               Text(
-                'Add your first branch to get started',
+                'Add your first vendor to get started',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.gray600,
                     ),
@@ -187,45 +186,76 @@ class _BranchesScreenState extends State<BranchesScreen> {
                 color: Colors.blue,
               ),
           columns: const [
-            DataColumn(label: Text('Branch Id')),
+            DataColumn(label: Text('Vendor Id')),
             DataColumn(label: Text('Name')),
-            DataColumn(label: Text('Country')),
-            DataColumn(label: Text('Phone Number')),
-            DataColumn(label: Text('Manager Name')),
-            DataColumn(label: Text('Phone Number')),
-            DataColumn(label: Text('Date')),
+            DataColumn(label: Text('Contact Person')),
+            DataColumn(label: Text('Phone')),
+            DataColumn(label: Text('Email')),
+            DataColumn(label: Text('Type')),
+            DataColumn(label: Text('Products Offered')),
             DataColumn(label: Text('Status')),
-            DataColumn(label: Text('')), // Edit column
+            DataColumn(label: Text('')), // Delete column
           ],
-          rows: branches.map((BranchModel branch) {
+          rows: vendors.map((VendorModel vendor) {
             return DataRow(
               cells: [
-                DataCell(Text(branch.branchId)),
-                DataCell(Text(branch.branchName)),
-                DataCell(Text(branch.branchCountry)),
-                DataCell(Text(branch.branchPhoneNo)),
-                DataCell(Text(branch.managerName)),
-                DataCell(Text(branch.managerPhoneNo)),
-                DataCell(Text(DateFormatter.formatDate(branch.date))),
-                DataCell(Text(branch.status)),
+                DataCell(Text(vendor.vendorId)),
+                DataCell(Text(vendor.vendorName)),
+                DataCell(Text(vendor.contactPersonName)),
+                DataCell(Text(vendor.vendorPhoneNo)),
+                DataCell(Text(vendor.vendorEmail)),
+                DataCell(Text(vendor.vendorType)),
+                DataCell(Text(vendor.productsOffered)),
+                DataCell(Text(vendor.vendorStatus)),
                 DataCell(
                   OutlinedButton(
                     onPressed: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditBranchScreen(branch: branch),
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Delete Vendor'),
+                          content: Text('Are you sure you want to delete ${vendor.vendorName}?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              style: TextButton.styleFrom(foregroundColor: Colors.red),
+                              child: const Text('Delete'),
+                            ),
+                          ],
                         ),
                       );
+
+                      if (confirmed == true && context.mounted) {
+                        final success = await context.read<VendorProvider>().deleteVendor(vendor.id);
+                        
+                        if (success && context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Vendor deleted successfully')),
+                          );
+                        } else if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                context.read<VendorProvider>().error ?? 'Failed to delete vendor',
+                              ),
+                            ),
+                          );
+                        }
+                      }
                     },
                     style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppSizes.spacing16,
                         vertical: AppSizes.spacing8,
                       ),
                       minimumSize: const Size(60, 32),
                     ),
-                    child: const Text('Edit'),
+                    child: const Text('Delete'),
                   ),
                 ),
               ],
