@@ -6,6 +6,7 @@ import 'package:assets_dashboard/core/theme/app_theme.dart';
 import 'package:assets_dashboard/widgets/sidebar_navigation.dart';
 import 'package:assets_dashboard/screens/home/home_screen.dart';
 import 'package:assets_dashboard/screens/assets/assets_screen.dart';
+import 'package:assets_dashboard/screens/branches/branches_screen.dart';
 import 'package:assets_dashboard/providers/asset_provider.dart';
 import 'package:assets_dashboard/providers/branch_provider.dart';
 import 'package:assets_dashboard/providers/employee_provider.dart';
@@ -97,7 +98,7 @@ class _MainLayoutState extends State<MainLayout> {
       case 1:
         return const AssetsScreen();
       case 2:
-        return _buildPlaceholderScreen('Branches');
+        return const BranchesScreen();
       case 3:
         return _buildPlaceholderScreen('Employees');
       case 4:
