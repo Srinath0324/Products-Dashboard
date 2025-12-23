@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:assets_dashboard/core/constants/app_colors.dart';
 import 'package:assets_dashboard/core/constants/app_sizes.dart';
-import 'package:assets_dashboard/data/demo_data.dart';
+import 'package:assets_dashboard/providers/dashboard_provider.dart';
+import 'package:assets_dashboard/providers/branch_provider.dart';
 import 'package:assets_dashboard/widgets/stat_card.dart';
 import 'package:assets_dashboard/widgets/chart_placeholder.dart';
 
@@ -14,95 +16,156 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String selectedBranch = 'All Branches';
-  final stats = DemoData.getDashboardStats();
-  final branches = DemoData.getBranches();
+  @override
+  void initState() {
+    super.initState();
+    // Load dashboard data and branches on init
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<DashboardProvider>().loadDashboardStats();
+      context.read<BranchProvider>().loadBranches();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSizes.spacing32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header Section
-            _buildHeader(),
-            
-            const SizedBox(height: AppSizes.spacing32),
-            
-            // Statistics Cards Section
-            _buildStatsSection(),
-            
-            const SizedBox(height: AppSizes.spacing32),
-            
-            // Branch Comparison Chart Section
-            const ChartPlaceholder(
-              title: 'Branch Comparison',
-              height: 350,
+      body: Consumer<DashboardProvider>(
+        builder: (context, dashboardProvider, child) {
+          // Show loading indicator
+          if (dashboardProvider.isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          // Show error message
+          if (dashboardProvider.error != null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    color: Colors.red,
+                    size: 48,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error loading dashboard',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    dashboardProvider.error!,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      dashboardProvider.loadDashboardStats();
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSizes.spacing32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header Section
+                _buildHeader(),
+                
+                const SizedBox(height: AppSizes.spacing32),
+                
+                // Statistics Cards Section
+                _buildStatsSection(dashboardProvider),
+                
+                const SizedBox(height: AppSizes.spacing32),
+                
+                // Branch Comparison Chart Section
+                const ChartPlaceholder(
+                  title: 'Branch Comparison',
+                  height: 350,
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
   Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Dashboard Title
-        Text(
-          'DashBoard',
-          style: Theme.of(context).textTheme.displayMedium?.copyWith(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        
-        // Branch Filter Dropdown
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSizes.spacing16,
-            vertical: AppSizes.spacing8,
-          ),
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            border: Border.all(
-              color: AppColors.border,
-              width: AppSizes.borderThin,
+    return Consumer2<DashboardProvider, BranchProvider>(
+      builder: (context, dashboardProvider, branchProvider, child) {
+        // Get branch names including "All Branches"
+        final branchNames = ['All Branches', ...branchProvider.getBranchNames()];
+        final selectedBranch = dashboardProvider.selectedBranch;
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Dashboard Title
+            Text(
+              'DashBoard',
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
-            borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
-          ),
-          child: DropdownButton<String>(
-            value: selectedBranch,
-            underline: const SizedBox(),
-            icon: const Icon(
-              Icons.keyboard_arrow_down,
-              color: AppColors.textPrimary,
+            
+            // Branch Filter Dropdown
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSizes.spacing16,
+                vertical: AppSizes.spacing8,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                border: Border.all(
+                  color: AppColors.border,
+                  width: AppSizes.borderThin,
+                ),
+                borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+              ),
+              child: DropdownButton<String>(
+                value: branchNames.contains(selectedBranch) 
+                    ? selectedBranch 
+                    : 'All Branches',
+                underline: const SizedBox(),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down,
+                  color: AppColors.textPrimary,
+                ),
+                style: Theme.of(context).textTheme.bodyMedium,
+                items: branchNames.map((String branch) {
+                  return DropdownMenuItem<String>(
+                    value: branch,
+                    child: Text(branch),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  if (newValue != null) {
+                    dashboardProvider.setSelectedBranch(newValue);
+                  }
+                },
+              ),
             ),
-            style: Theme.of(context).textTheme.bodyMedium,
-            items: branches.map((String branch) {
-              return DropdownMenuItem<String>(
-                value: branch,
-                child: Text(branch),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              if (newValue != null) {
-                setState(() {
-                  selectedBranch = newValue;
-                });
-              }
-            },
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildStatsSection() {
+  Widget _buildStatsSection(DashboardProvider dashboardProvider) {
+    final stats = dashboardProvider.stats;
+
     return Container(
       padding: const EdgeInsets.all(AppSizes.spacing24),
       decoration: BoxDecoration(
@@ -113,26 +176,38 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // Calculate responsive grid
-          final crossAxisCount = constraints.maxWidth > 1200 ? 3 : 2;
-          
-          return GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              childAspectRatio: 2.2,
-              crossAxisSpacing: AppSizes.spacing16,
-              mainAxisSpacing: AppSizes.spacing16,
-            ),
-            itemCount: stats.length,
-            itemBuilder: (context, index) {
-              return StatCard(stats: stats[index]);
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Quick Stats',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(height: AppSizes.spacing16),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Calculate responsive grid
+              final crossAxisCount = constraints.maxWidth > 1200 ? 3 : 2;
+              
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  childAspectRatio: 2.2,
+                  crossAxisSpacing: AppSizes.spacing16,
+                  mainAxisSpacing: AppSizes.spacing16,
+                ),
+                itemCount: stats.length,
+                itemBuilder: (context, index) {
+                  return StatCard(stats: stats[index]);
+                },
+              );
             },
-          );
-        },
+          ),
+        ],
       ),
     );
   }

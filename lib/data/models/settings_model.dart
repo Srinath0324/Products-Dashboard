@@ -29,7 +29,7 @@ class SettingsModel {
     return SettingsModel(
       id: 'app_settings',
       assetCategories: ['IT asset', 'Non IT', 'Furniture', 'Equipment'],
-      assetStatuses: ['Active', 'Inactive', 'Assigned', 'Returned', 'Under Repair'],
+      assetStatuses: ['Active', 'Inactive', 'Assigned', 'Returned', 'Under Repair', 'Available'],
       notificationSettings: '',
       branchDepartmentMapping: true,
       vendorSupplierLinking: true,
