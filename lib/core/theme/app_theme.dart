@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:assets_dashboard/core/constants/app_colors.dart';
 
-/// App theme configuration - Black & White theme
+/// App theme configuration 
 class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(

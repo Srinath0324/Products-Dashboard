@@ -32,7 +32,7 @@ class _FirebaseConnectionTestState extends State<FirebaseConnectionTest> {
       // Try to access Firestore
       final firestore = FirestoreService.instance.firestore;
       
-      // Try to read from a test collection (this will verify connection)
+      // Try to read from a test collection 
       await firestore.collection('_connection_test').limit(1).get();
 
       setState(() {

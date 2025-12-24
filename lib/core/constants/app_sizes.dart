@@ -1,4 +1,4 @@
-/// App size and spacing constants for pixel-perfect UI
+/// App size and spacing constants 
 class AppSizes {
   // Spacing
   static const double spacing4 = 4.0;

@@ -2,23 +2,20 @@ import 'package:intl/intl.dart';
 
 /// Utility class for date formatting operations
 class DateFormatter {
-  // Private constructor to prevent instantiation
+
   DateFormatter._();
 
-  /// Format DateTime to string in MM/dd/yy format
-  /// Example: 12/23/25
+
   static String formatDate(DateTime date) {
     return DateFormat('M/d/yy').format(date);
   }
 
-  /// Format DateTime to string in MM/dd/yyyy format
-  /// Example: 12/23/2025
+
   static String formatDateFull(DateTime date) {
     return DateFormat('M/d/yyyy').format(date);
   }
 
   /// Parse string date to DateTime
-  /// Supports formats: M/d/yy, M/d/yyyy, MM/dd/yy, MM/dd/yyyy
   static DateTime? parseDate(String dateString) {
     try {
       // Try parsing with different formats
@@ -42,7 +39,7 @@ class DateFormatter {
     }
   }
 
-  /// Format DateTime to display format (e.g., "December 23, 2025")
+  /// Format DateTime to display format
   static String formatDateDisplay(DateTime date) {
     return DateFormat('MMMM d, yyyy').format(date);
   }
