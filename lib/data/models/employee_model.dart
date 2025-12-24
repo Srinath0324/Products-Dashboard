@@ -13,7 +13,6 @@ class EmployeeModel {
   final String employeeBranch;
   final String employeeType;
   final DateTime employeeDateOfJoining;
-  final double employeeSalary;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -29,7 +28,6 @@ class EmployeeModel {
     required this.employeeBranch,
     required this.employeeType,
     required this.employeeDateOfJoining,
-    required this.employeeSalary,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -49,7 +47,6 @@ class EmployeeModel {
       employeeBranch: data['employeeBranch'] as String? ?? '',
       employeeType: data['employeeType'] as String? ?? '',
       employeeDateOfJoining: (data['employeeDateOfJoining'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      employeeSalary: (data['employeeSalary'] as num?)?.toDouble() ?? 0.0,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -73,7 +70,6 @@ class EmployeeModel {
       employeeDateOfJoining: json['employeeDateOfJoining'] is Timestamp
           ? (json['employeeDateOfJoining'] as Timestamp).toDate()
           : DateTime.parse(json['employeeDateOfJoining'] as String? ?? DateTime.now().toIso8601String()),
-      employeeSalary: (json['employeeSalary'] as num?)?.toDouble() ?? 0.0,
       createdAt: json['createdAt'] is Timestamp
           ? (json['createdAt'] as Timestamp).toDate()
           : DateTime.parse(json['createdAt'] as String? ?? DateTime.now().toIso8601String()),
@@ -96,7 +92,6 @@ class EmployeeModel {
       'employeeBranch': employeeBranch,
       'employeeType': employeeType,
       'employeeDateOfJoining': Timestamp.fromDate(employeeDateOfJoining),
-      'employeeSalary': employeeSalary,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };
@@ -115,7 +110,6 @@ class EmployeeModel {
     String? employeeBranch,
     String? employeeType,
     DateTime? employeeDateOfJoining,
-    double? employeeSalary,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -131,7 +125,6 @@ class EmployeeModel {
       employeeBranch: employeeBranch ?? this.employeeBranch,
       employeeType: employeeType ?? this.employeeType,
       employeeDateOfJoining: employeeDateOfJoining ?? this.employeeDateOfJoining,
-      employeeSalary: employeeSalary ?? this.employeeSalary,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

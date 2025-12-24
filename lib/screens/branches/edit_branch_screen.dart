@@ -78,9 +78,22 @@ class _EditBranchScreenState extends State<EditBranchScreen> {
       return;
     }
 
+    // Validate all required fields
+    List<String> missingFields = [];
+    
+    if (_selectedStatus == null || _selectedStatus!.isEmpty) {
+      missingFields.add('Status');
+    }
     if (_selectedDate == null) {
+      missingFields.add('Date');
+    }
+
+    if (missingFields.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select date')),
+        SnackBar(
+          content: Text('Please fill in: ${missingFields.join(', ')}'),
+          duration: const Duration(seconds: 3),
+        ),
       );
       return;
     }
@@ -316,7 +329,7 @@ class _EditBranchScreenState extends State<EditBranchScreen> {
                     children: [
                       Expanded(
                         child: _buildDropdown(
-                          label: 'Status',
+                          label: 'Status*',
                           value: _selectedStatus,
                           items: statuses,
                           onChanged: (value) {
@@ -329,7 +342,7 @@ class _EditBranchScreenState extends State<EditBranchScreen> {
                       const SizedBox(width: AppSizes.spacing24),
                       Expanded(
                         child: _buildDateField(
-                          label: 'Date',
+                          label: 'Date*',
                           selectedDate: _selectedDate,
                           onTap: () => _selectDate(context),
                         ),

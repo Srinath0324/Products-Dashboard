@@ -71,9 +71,34 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
       return;
     }
 
-    if (_selectedDate == null || _selectedWarranty == null) {
+    // Validate all required fields
+    List<String> missingFields = [];
+    
+    if (_selectedCategory == null || _selectedCategory!.isEmpty) {
+      missingFields.add('Category');
+    }
+    if (_selectedAssignedTo == null || _selectedAssignedTo!.isEmpty) {
+      missingFields.add('Assigned To');
+    }
+    if (_selectedStatus == null || _selectedStatus!.isEmpty) {
+      missingFields.add('Status');
+    }
+    if (_selectedCondition == null || _selectedCondition!.isEmpty) {
+      missingFields.add('Condition');
+    }
+    if (_selectedDate == null) {
+      missingFields.add('Date');
+    }
+    if (_selectedWarranty == null) {
+      missingFields.add('Warranty');
+    }
+
+    if (missingFields.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select both date and warranty')),
+        SnackBar(
+          content: Text('Please fill in: ${missingFields.join(', ')}'),
+          duration: const Duration(seconds: 3),
+        ),
       );
       return;
     }

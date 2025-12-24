@@ -17,6 +17,7 @@ import 'package:assets_dashboard/providers/employee_provider.dart';
 import 'package:assets_dashboard/providers/vendor_provider.dart';
 import 'package:assets_dashboard/providers/settings_provider.dart';
 import 'package:assets_dashboard/providers/dashboard_provider.dart';
+import 'package:assets_dashboard/providers/reports_provider.dart';
 
 void main() async {
   // Ensure Flutter binding is initialized
@@ -49,6 +50,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => VendorProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
+        ChangeNotifierProvider(create: (_) => ReportsProvider()),
       ],
       child: MaterialApp(
         title: 'Assets Dashboard',

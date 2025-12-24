@@ -23,7 +23,6 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   final _employeeEmailController = TextEditingController();
   final _employeeDepartmentController = TextEditingController();
   final _employeeDesignationController = TextEditingController();
-  final _employeeSalaryController = TextEditingController();
   
   String? _selectedBranch;
   String? _selectedType;
@@ -49,7 +48,6 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     _employeeEmailController.dispose();
     _employeeDepartmentController.dispose();
     _employeeDesignationController.dispose();
-    _employeeSalaryController.dispose();
     super.dispose();
   }
 
@@ -76,9 +74,28 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       return;
     }
 
-    if (_selectedDOB == null || _selectedDateOfJoining == null) {
+    // Validate all required fields
+    List<String> missingFields = [];
+    
+    if (_selectedBranch == null || _selectedBranch!.isEmpty) {
+      missingFields.add('Employee Branch');
+    }
+    if (_selectedType == null || _selectedType!.isEmpty) {
+      missingFields.add('Employee Type');
+    }
+    if (_selectedDOB == null) {
+      missingFields.add('Employee DOB');
+    }
+    if (_selectedDateOfJoining == null) {
+      missingFields.add('Employee Date Of Joining');
+    }
+
+    if (missingFields.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select DOB and Date of Joining')),
+        SnackBar(
+          content: Text('Please fill in: ${missingFields.join(', ')}'),
+          duration: const Duration(seconds: 3),
+        ),
       );
       return;
     }
@@ -99,7 +116,6 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       employeeBranch: _selectedBranch ?? '',
       employeeType: _selectedType ?? 'Full-time',
       employeeDateOfJoining: _selectedDateOfJoining!,
-      employeeSalary: double.tryParse(_employeeSalaryController.text.trim()) ?? 0.0,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
@@ -203,7 +219,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                         children: [
                           Expanded(
                             child: _buildDateField(
-                              label: 'Employee DOB',
+                              label: 'Employee DOB*',
                               selectedDate: _selectedDOB,
                               onTap: () => _selectDate(context, true),
                             ),
@@ -279,7 +295,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                           const SizedBox(width: AppSizes.spacing24),
                           Expanded(
                             child: _buildDropdown(
-                              label: 'Employee Branch',
+                              label: 'Employee Branch*',
                               value: _selectedBranch,
                               items: branches,
                               onChanged: (value) {
@@ -299,7 +315,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                         children: [
                           Expanded(
                             child: _buildDateField(
-                              label: 'Employee Date Of Joining',
+                              label: 'Employee Date Of Joining*',
                               selectedDate: _selectedDateOfJoining,
                               onTap: () => _selectDate(context, false),
                             ),
@@ -307,7 +323,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                           const SizedBox(width: AppSizes.spacing24),
                           Expanded(
                             child: _buildDropdown(
-                              label: 'Employee Type',
+                              label: 'Employee Type*',
                               value: _selectedType,
                               items: types,
                               onChanged: (value) {
@@ -321,29 +337,6 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                       ),
 
                       const SizedBox(height: AppSizes.spacing24),
-
-                      // Row 6: Employee Salary
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildTextField(
-                              label: 'Employee Salary',
-                              controller: _employeeSalaryController,
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Required';
-                                }
-                                if (double.tryParse(value) == null) {
-                                  return 'Invalid number';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const Expanded(child: SizedBox()),
-                        ],
-                      ),
 
                       const SizedBox(height: AppSizes.spacing32),
 

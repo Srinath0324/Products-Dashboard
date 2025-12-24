@@ -43,6 +43,17 @@ class _AddVendorScreenState extends State<AddVendorScreen> {
       return;
     }
 
+    // Validate all required fields
+    if (_selectedStatus == null || _selectedStatus!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in: Vendor Status'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -135,7 +146,7 @@ class _AddVendorScreenState extends State<AddVendorScreen> {
                     children: [
                       Expanded(child: _buildTextField('Products Offered', _productsOfferedController, maxLines: 3)),
                       const SizedBox(width: 24),
-                      Expanded(child: _buildDropdown('Vendor Status', _selectedStatus, statuses)),
+                      Expanded(child: _buildDropdown('Vendor Status*', _selectedStatus, statuses)),
                     ],
                   ),
                   const SizedBox(height: 32),
