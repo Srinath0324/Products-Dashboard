@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:assets_dashboard/core/constants/app_colors.dart';
 import 'package:assets_dashboard/core/constants/app_sizes.dart';
+import 'package:assets_dashboard/core/utils/responsive_helper.dart';
 import 'package:assets_dashboard/models/dashboard_stats.dart';
 
 /// Reusable statistics card widget
@@ -14,8 +15,13 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = ResponsiveHelper.isMobile(context);
+    final cardPadding = isMobile ? 12.0 : AppSizes.spacing24;
+    final valueFontSize = isMobile ? 24.0 : 36.0;
+    final spacing = isMobile ? 6.0 : AppSizes.spacing12;
+    
     return Container(
-      padding: const EdgeInsets.all(AppSizes.spacing24),
+      padding: EdgeInsets.all(cardPadding),
       decoration: BoxDecoration(
         color: AppColors.background,
         border: Border.all(
@@ -29,32 +35,47 @@ class StatCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Title
-          Text(
-            stats.title,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
+          Flexible(
+            child: Text(
+              stats.title,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: isMobile ? 12 : null,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
           
-          const SizedBox(height: AppSizes.spacing12),
+          SizedBox(height: spacing),
           
           // Value
-          Text(
-            stats.displayValue,
-            style: Theme.of(context).textTheme.displayMedium?.copyWith(
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                stats.displayValue,
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  fontSize: valueFontSize,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
           
           // Subtitle (if any)
           if (stats.subtitle != null) ...[
-            const SizedBox(height: AppSizes.spacing8),
-            Text(
-              stats.subtitle!,
-              style: Theme.of(context).textTheme.bodySmall,
+            SizedBox(height: spacing / 2),
+            Flexible(
+              child: Text(
+                stats.subtitle!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontSize: isMobile ? 10 : null,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ],

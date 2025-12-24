@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:assets_dashboard/core/config/firebase_config.dart';
 import 'package:assets_dashboard/core/theme/app_theme.dart';
+import 'package:assets_dashboard/core/utils/responsive_helper.dart';
 import 'package:assets_dashboard/widgets/sidebar_navigation.dart';
 import 'package:assets_dashboard/screens/home/home_screen.dart';
 import 'package:assets_dashboard/screens/assets/assets_screen.dart';
@@ -72,21 +73,26 @@ class MainLayout extends StatefulWidget {
 
 class _MainLayoutState extends State<MainLayout> {
   int selectedIndex = 0;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    
     return Scaffold(
+      key: _scaffoldKey,
+      // Show app bar with hamburger menu on mobile/tablet
+      appBar: isDesktop ? null : _buildMobileAppBar(),
+      // Show drawer on mobile/tablet
+      drawer: isDesktop ? null : _buildDrawer(),
       body: Row(
         children: [
-          // Sidebar Navigation
-          SidebarNavigation(
-            selectedIndex: selectedIndex,
-            onItemSelected: (index) {
-              setState(() {
-                selectedIndex = index;
-              });
-            },
-          ),
+          // Show sidebar only on desktop
+          if (isDesktop)
+            SidebarNavigation(
+              selectedIndex: selectedIndex,
+              onItemSelected: _handleNavigation,
+            ),
           
           // Main Content Area
           Expanded(
@@ -95,6 +101,51 @@ class _MainLayoutState extends State<MainLayout> {
         ],
       ),
     );
+  }
+
+  PreferredSizeWidget _buildMobileAppBar() {
+    return AppBar(
+      elevation: 0,
+      backgroundColor: Colors.white,
+      leading: IconButton(
+        icon: const Icon(Icons.menu, color: Colors.black87),
+        onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+      ),
+      title: const Text(
+        'Assets Dashboard',
+        style: TextStyle(
+          color: Colors.black87,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+          color: const Color(0xFFE5E7EB),
+          height: 1,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawer() {
+    return Drawer(
+      child: SidebarNavigation(
+        selectedIndex: selectedIndex,
+        onItemSelected: _handleNavigation,
+      ),
+    );
+  }
+
+  void _handleNavigation(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
+    // Close drawer on mobile/tablet after selection
+    if (!ResponsiveHelper.isDesktop(context)) {
+      Navigator.of(context).pop();
+    }
   }
 
   Widget _getSelectedScreen() {

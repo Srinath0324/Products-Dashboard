@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:assets_dashboard/core/constants/app_colors.dart';
 import 'package:assets_dashboard/core/constants/app_sizes.dart';
 import 'package:assets_dashboard/core/utils/date_formatter.dart';
+import 'package:assets_dashboard/core/utils/responsive_helper.dart';
 import 'package:assets_dashboard/data/models/branch_model.dart';
 import 'package:assets_dashboard/providers/branch_provider.dart';
 import 'package:assets_dashboard/screens/branches/add_branch_screen.dart';
@@ -74,43 +75,14 @@ class _BranchesScreenState extends State<BranchesScreen> {
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSizes.spacing32),
+            padding: EdgeInsets.all(ResponsiveHelper.getPadding(context)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Branches List',
-                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    OutlinedButton.icon(
-                      onPressed: () async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AddBranchScreen(),
-                          ),
-                        );
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSizes.spacing24,
-                          vertical: AppSizes.spacing12,
-                        ),
-                      ),
-                      icon: const Icon(Icons.add, size: 18),
-                      label: const Text('Add Branch'),
-                    ),
-                  ],
-                ),
+                _buildHeader(),
 
-                const SizedBox(height: AppSizes.spacing32),
+                SizedBox(height: ResponsiveHelper.getSpacing(context)),
 
                 // Data Table
                 _buildDataTable(branchProvider),
@@ -121,6 +93,79 @@ class _BranchesScreenState extends State<BranchesScreen> {
       ),
     );
   }
+
+  Widget _buildHeader() {
+    final isMobile = ResponsiveHelper.isMobile(context);
+    final titleFontSize = ResponsiveHelper.getTitleFontSize(context);
+
+    if (isMobile) {
+      // Stack layout for mobile
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Branches List',
+            style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  fontSize: titleFontSize,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddBranchScreen(),
+                ),
+              );
+            },
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSizes.spacing24,
+                vertical: AppSizes.spacing12,
+              ),
+            ),
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('Add Branch'),
+          ),
+        ],
+      );
+    }
+
+    // Desktop/Tablet layout
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Branches List',
+          style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                fontSize: titleFontSize,
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        OutlinedButton.icon(
+          onPressed: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AddBranchScreen(),
+              ),
+            );
+          },
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.spacing24,
+              vertical: AppSizes.spacing12,
+            ),
+          ),
+          icon: const Icon(Icons.add, size: 18),
+          label: const Text('Add Branch'),
+        ),
+      ],
+    );
+  }
+
 
   Widget _buildDataTable(BranchProvider branchProvider) {
     final branches = branchProvider.branches;

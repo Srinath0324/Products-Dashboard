@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:assets_dashboard/core/constants/app_colors.dart';
 import 'package:assets_dashboard/core/constants/app_sizes.dart';
+import 'package:assets_dashboard/core/utils/responsive_helper.dart';
 import 'package:assets_dashboard/providers/dashboard_provider.dart';
 import 'package:assets_dashboard/providers/branch_provider.dart';
 import 'package:assets_dashboard/widgets/stat_card.dart';
@@ -74,19 +75,19 @@ class _HomeScreenState extends State<HomeScreen> {
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSizes.spacing32),
+            padding: EdgeInsets.all(ResponsiveHelper.getPadding(context)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header Section
                 _buildHeader(),
                 
-                const SizedBox(height: AppSizes.spacing32),
+                SizedBox(height: ResponsiveHelper.getSpacing(context)),
                 
                 // Statistics Cards Section
                 _buildStatsSection(dashboardProvider),
                 
-                const SizedBox(height: AppSizes.spacing32),
+                SizedBox(height: ResponsiveHelper.getSpacing(context)),
                 
                 // Branch Comparison Chart Section
                 const ChartPlaceholder(
@@ -107,7 +108,67 @@ class _HomeScreenState extends State<HomeScreen> {
         // Get branch names including "All Branches"
         final branchNames = ['All Branches', ...branchProvider.getBranchNames()];
         final selectedBranch = dashboardProvider.selectedBranch;
+        final isMobile = ResponsiveHelper.isMobile(context);
+        final titleFontSize = ResponsiveHelper.getTitleFontSize(context);
 
+        if (isMobile) {
+          // Stack layout for mobile
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Dashboard Title
+              Text(
+                'DashBoard',
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      fontSize: titleFontSize,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 12),
+              // Branch Filter Dropdown
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSizes.spacing16,
+                  vertical: AppSizes.spacing8,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  border: Border.all(
+                    color: AppColors.border,
+                    width: AppSizes.borderThin,
+                  ),
+                  borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+                ),
+                child: DropdownButton<String>(
+                  value: branchNames.contains(selectedBranch) 
+                      ? selectedBranch 
+                      : 'All Branches',
+                  isExpanded: true,
+                  underline: const SizedBox(),
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down,
+                    color: AppColors.textPrimary,
+                  ),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  items: branchNames.map((String branch) {
+                    return DropdownMenuItem<String>(
+                      value: branch,
+                      child: Text(branch),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      dashboardProvider.setSelectedBranch(newValue);
+                    }
+                  },
+                ),
+              ),
+            ],
+          );
+        }
+
+        // Desktop/Tablet layout
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -115,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               'DashBoard',
               style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    fontSize: 32,
+                    fontSize: titleFontSize,
                     fontWeight: FontWeight.bold,
                   ),
             ),
@@ -189,14 +250,17 @@ class _HomeScreenState extends State<HomeScreen> {
           LayoutBuilder(
             builder: (context, constraints) {
               // Calculate responsive grid
+              final isMobile = ResponsiveHelper.isMobile(context);
               final crossAxisCount = constraints.maxWidth > 1200 ? 3 : 2;
+              // Adjust aspect ratio for mobile to give more height
+              final aspectRatio = isMobile ? 1.8 : 2.2;
               
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: crossAxisCount,
-                  childAspectRatio: 2.2,
+                  childAspectRatio: aspectRatio,
                   crossAxisSpacing: AppSizes.spacing16,
                   mainAxisSpacing: AppSizes.spacing16,
                 ),

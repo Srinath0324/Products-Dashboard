@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:assets_dashboard/core/constants/app_colors.dart';
 import 'package:assets_dashboard/models/report_models.dart';
 import 'package:intl/intl.dart';
+import 'package:assets_dashboard/core/utils/responsive_helper.dart';
 
 /// Reusable Line Chart Widget for timeline data
 class LineChartWidget extends StatelessWidget {
@@ -70,16 +71,17 @@ class LineChartWidget extends StatelessWidget {
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
-                  reservedSize: 40,
+                  reservedSize: ResponsiveHelper.getAxisReservedSize(context),
                   interval: data.length > 6 ? (data.length / 6).ceilToDouble() : 1,
                   getTitlesWidget: (value, meta) {
                     if (value.toInt() >= 0 && value.toInt() < data.length) {
                       final dataPoint = data[value.toInt()];
+                      final fontSize = ResponsiveHelper.getChartLabelFontSize(context);
                       return Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
                           _formatDate(dataPoint.date),
-                          style: const TextStyle(fontSize: 10),
+                          style: TextStyle(fontSize: fontSize),
                           textAlign: TextAlign.center,
                         ),
                       );
@@ -91,11 +93,12 @@ class LineChartWidget extends StatelessWidget {
               leftTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
-                  reservedSize: 40,
+                  reservedSize: ResponsiveHelper.getAxisReservedSize(context),
                   getTitlesWidget: (value, meta) {
+                    final fontSize = ResponsiveHelper.getChartLabelFontSize(context);
                     return Text(
                       value.toInt().toString(),
-                      style: const TextStyle(fontSize: 10),
+                      style: TextStyle(fontSize: fontSize),
                     );
                   },
                 ),

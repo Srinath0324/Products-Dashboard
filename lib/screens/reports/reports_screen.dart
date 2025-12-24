@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:assets_dashboard/core/constants/app_colors.dart';
 import 'package:assets_dashboard/core/constants/app_sizes.dart';
 import 'package:assets_dashboard/core/utils/date_formatter.dart';
+import 'package:assets_dashboard/core/utils/responsive_helper.dart';
 import 'package:assets_dashboard/providers/reports_provider.dart';
 import 'package:assets_dashboard/widgets/charts/pie_chart_widget.dart';
 import 'package:assets_dashboard/widgets/charts/bar_chart_widget.dart';
@@ -161,39 +162,39 @@ class _ReportsScreenState extends State<ReportsScreen> {
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSizes.spacing32),
+            padding: EdgeInsets.all(ResponsiveHelper.getPadding(context)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header
                 _buildHeader(),
 
-                const SizedBox(height: 32),
+                SizedBox(height: ResponsiveHelper.getSpacing(context)),
 
                 // Financial Overview Cards
                 _buildFinancialOverview(reportsProvider),
 
-                const SizedBox(height: 32),
+                SizedBox(height: ResponsiveHelper.getSpacing(context)),
 
                 // Distribution Charts Section
                 _buildDistributionSection(reportsProvider),
 
-                const SizedBox(height: 32),
+                SizedBox(height: ResponsiveHelper.getSpacing(context)),
 
                 // Timeline Analysis
                 _buildTimelineSection(reportsProvider),
 
-                const SizedBox(height: 32),
+                SizedBox(height: ResponsiveHelper.getSpacing(context)),
 
                 // Top Assets and Category Breakdown
                 _buildTopAssetsSection(reportsProvider),
 
-                const SizedBox(height: 32),
+                SizedBox(height: ResponsiveHelper.getSpacing(context)),
 
                 // Warranty Alerts
                 _buildWarrantySection(reportsProvider),
 
-                const SizedBox(height: 32),
+                SizedBox(height: ResponsiveHelper.getSpacing(context)),
 
                 // Recent Activity
                 _buildActivitySection(reportsProvider),
@@ -206,13 +207,83 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Widget _buildHeader() {
+    final isMobile = ResponsiveHelper.isMobile(context);
+    final titleFontSize = ResponsiveHelper.getTitleFontSize(context);
+    
+    if (isMobile) {
+      // Stack layout for mobile
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Reports and Analytics',
+            style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  fontSize: titleFontSize,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              // Date filter dropdown
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    border: Border.all(
+                      color: AppColors.border,
+                      width: AppSizes.borderThin,
+                    ),
+                    borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+                  ),
+                  child: DropdownButton<String>(
+                    value: _selectedDateFilter,
+                    isExpanded: true,
+                    underline: const SizedBox(),
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down,
+                      color: AppColors.textPrimary,
+                    ),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    items: _dateFilterOptions.map((String filter) {
+                      return DropdownMenuItem<String>(
+                        value: filter,
+                        child: Text(filter),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        _applyDateFilter(newValue);
+                      }
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Export button
+              OutlinedButton.icon(
+                onPressed: _exportData,
+                icon: const Icon(Icons.download, size: 18),
+                label: const Text('Export'),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+    
+    // Desktop/Tablet layout
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           'Reports and Analytics',
           style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                fontSize: 32,
+                fontSize: titleFontSize,
                 fontWeight: FontWeight.bold,
               ),
         ),
@@ -269,39 +340,54 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget _buildFinancialOverview(ReportsProvider provider) {
     final valueReport = provider.getAssetValueReport();
 
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatCard(
-            'Total Asset Value',
-            '\$${valueReport.totalValue.toStringAsFixed(0)}',
-            Icons.account_balance_wallet,
-            Colors.blue,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildStatCard(
-            'Average Asset Value',
-            '\$${valueReport.averageValue.toStringAsFixed(0)}',
-            Icons.analytics,
-            Colors.green,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildStatCard(
-            'Total Assets',
-            '${valueReport.totalAssets}',
-            Icons.inventory_2,
-            Colors.orange,
-          ),
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columnCount = ResponsiveHelper.getColumnCount(context, maxColumns: 3);
+        final spacing = ResponsiveHelper.getCardSpacing(context);
+        final availableWidth = constraints.maxWidth;
+        final totalSpacing = spacing * (columnCount - 1);
+        final cardWidth = (availableWidth - totalSpacing) / columnCount;
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            SizedBox(
+              width: cardWidth,
+              child: _buildStatCard(
+                'Total Asset Value',
+                '\$${valueReport.totalValue.toStringAsFixed(0)}',
+                Icons.account_balance_wallet,
+                Colors.blue,
+              ),
+            ),
+            SizedBox(
+              width: cardWidth,
+              child: _buildStatCard(
+                'Average Asset Value',
+                '\$${valueReport.averageValue.toStringAsFixed(0)}',
+                Icons.analytics,
+                Colors.green,
+              ),
+            ),
+            SizedBox(
+              width: cardWidth,
+              child: _buildStatCard(
+                'Total Assets',
+                '${valueReport.totalAssets}',
+                Icons.inventory_2,
+                Colors.orange,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+    final iconSize = ResponsiveHelper.getIconSize(context);
+    
     return Container(
       padding: const EdgeInsets.all(AppSizes.spacing24),
       decoration: BoxDecoration(
@@ -320,7 +406,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: color, size: 32),
+            child: Icon(icon, color: color, size: iconSize),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -363,52 +449,59 @@ class _ReportsScreenState extends State<ReportsScreen> {
               ),
         ),
         const SizedBox(height: 16),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Status Distribution
-            Expanded(
-              child: SizedBox(
-                height: 350,
-                child: ReportCard(
-                  title: 'Assets by Status',
-                  child: PieChartWidget(
-                    data: provider.getChartData(distribution.byStatus),
-                    isDonut: false,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            // Category Distribution
-            Expanded(
-              child: SizedBox(
-                height: 350,
-                child: ReportCard(
-                  title: 'Assets by Category',
-                  child: BarChartWidget(
-                    data: distribution.byCategory.map(
-                      (key, value) => MapEntry(key, value.toDouble()),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final columnCount = ResponsiveHelper.getColumnCount(context, maxColumns: 3);
+            final spacing = ResponsiveHelper.getCardSpacing(context);
+            final chartHeight = ResponsiveHelper.getChartHeight(context, defaultHeight: 350);
+            final availableWidth = constraints.maxWidth;
+            final totalSpacing = spacing * (columnCount - 1);
+            final cardWidth = (availableWidth - totalSpacing) / columnCount;
+
+            return Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: [
+                // Status Distribution
+                SizedBox(
+                  width: cardWidth,
+                  height: chartHeight,
+                  child: ReportCard(
+                    title: 'Assets by Status',
+                    child: PieChartWidget(
+                      data: provider.getChartData(distribution.byStatus),
+                      isDonut: false,
                     ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            // Condition Distribution
-            Expanded(
-              child: SizedBox(
-                height: 350,
-                child: ReportCard(
-                  title: 'Assets by Condition',
-                  child: PieChartWidget(
-                    data: provider.getChartData(distribution.byCondition),
-                    isDonut: true,
+                // Category Distribution
+                SizedBox(
+                  width: cardWidth,
+                  height: chartHeight,
+                  child: ReportCard(
+                    title: 'Assets by Category',
+                    child: BarChartWidget(
+                      data: distribution.byCategory.map(
+                        (key, value) => MapEntry(key, value.toDouble()),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ],
+                // Condition Distribution
+                SizedBox(
+                  width: cardWidth,
+                  height: chartHeight,
+                  child: ReportCard(
+                    title: 'Assets by Condition',
+                    child: PieChartWidget(
+                      data: provider.getChartData(distribution.byCondition),
+                      isDonut: true,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ],
     );
@@ -416,6 +509,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   Widget _buildTimelineSection(ReportsProvider provider) {
     final timeline = provider.getAcquisitionTimeline();
+    final chartHeight = ResponsiveHelper.getChartHeight(context, defaultHeight: 350);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,7 +522,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 350,
+          height: chartHeight,
           child: ReportCard(
             title: 'Asset Acquisition Timeline',
             child: LineChartWidget(
@@ -445,112 +539,126 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final valueReport = provider.getAssetValueReport();
     final categoryBreakdown = provider.getCategoryBreakdown();
 
-    return Row(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Top 5 Assets by Value
-        Expanded(
-          child: SizedBox(
-            height: 400,
-            child: ReportCard(
-              title: 'Top 5 Assets by Value',
-              child: valueReport.topAssetsByValue.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No assets available',
-                        style: TextStyle(color: AppColors.gray600),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: valueReport.topAssetsByValue.length,
-                      itemBuilder: (context, index) {
-                        final asset = valueReport.topAssetsByValue[index];
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.gray100,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final columnCount = ResponsiveHelper.getColumnCount(context, maxColumns: 2);
+            final spacing = ResponsiveHelper.getCardSpacing(context);
+            final chartHeight = ResponsiveHelper.getChartHeight(context, defaultHeight: 400);
+            final availableWidth = constraints.maxWidth;
+            final totalSpacing = spacing * (columnCount - 1);
+            final cardWidth = (availableWidth - totalSpacing) / columnCount;
+
+            return Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: [
+                // Top 5 Assets by Value
+                SizedBox(
+                  width: cardWidth,
+                  height: chartHeight,
+                  child: ReportCard(
+                    title: 'Top 5 Assets by Value',
+                    child: valueReport.topAssetsByValue.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No assets available',
+                              style: TextStyle(color: AppColors.gray600),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: valueReport.topAssetsByValue.length,
+                            itemBuilder: (context, index) {
+                              final asset = valueReport.topAssetsByValue[index];
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF2563EB).withOpacity(0.1),
-                                  shape: BoxShape.circle,
+                                  color: AppColors.gray100,
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Center(
-                                  child: Text(
-                                    '${index + 1}',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF2563EB),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                child: Row(
                                   children: [
-                                    Text(
-                                      asset.name,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF2563EB).withOpacity(0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF2563EB),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            asset.name,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          Text(
+                                            '${asset.assetId} • ${asset.category}',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: AppColors.gray600,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                     Text(
-                                      '${asset.assetId} • ${asset.category}',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: AppColors.gray600,
+                                      '\$${asset.value.toStringAsFixed(0)}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
                                       ),
                                     ),
                                   ],
                                 ),
-                              ),
-                              Text(
-                                '\$${asset.value.toStringAsFixed(0)}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        // Category Value Breakdown
-        Expanded(
-          child: SizedBox(
-            height: 400,
-            child: ReportCard(
-              title: 'Value by Category',
-              child: categoryBreakdown.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No data available',
-                        style: TextStyle(color: AppColors.gray600),
-                      ),
-                    )
-                  : BarChartWidget(
-                      data: Map.fromEntries(
-                        categoryBreakdown.map(
-                          (cb) => MapEntry(cb.category, cb.totalValue),
-                        ),
-                      ),
-                      valuePrefix: '\$',
-                    ),
-            ),
-          ),
+                  ),
+                ),
+                // Category Value Breakdown
+                SizedBox(
+                  width: cardWidth,
+                  height: chartHeight,
+                  child: ReportCard(
+                    title: 'Value by Category',
+                    child: categoryBreakdown.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No data available',
+                              style: TextStyle(color: AppColors.gray600),
+                            ),
+                          )
+                        : BarChartWidget(
+                            data: Map.fromEntries(
+                              categoryBreakdown.map(
+                                (cb) => MapEntry(cb.category, cb.totalValue),
+                              ),
+                            ),
+                            valuePrefix: '\$',
+                          ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ],
     );
@@ -569,44 +677,58 @@ class _ReportsScreenState extends State<ReportsScreen> {
               ),
         ),
         const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildWarrantyCard(
-                'Expired',
-                warrantyReport.expiredCount,
-                Colors.red,
-                Icons.warning,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildWarrantyCard(
-                'Expiring in 30 Days',
-                warrantyReport.expiringSoon30Days,
-                Colors.orange,
-                Icons.schedule,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildWarrantyCard(
-                'Expiring in 60 Days',
-                warrantyReport.expiringSoon60Days,
-                Colors.amber,
-                Icons.access_time,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildWarrantyCard(
-                'Active Warranties',
-                warrantyReport.activeWarranties,
-                Colors.green,
-                Icons.check_circle,
-              ),
-            ),
-          ],
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = ResponsiveHelper.isMobile(context);
+            final columnCount = isMobile ? 2 : 4; // 2x2 grid on mobile, 4 columns on desktop
+            final spacing = ResponsiveHelper.getCardSpacing(context);
+            final availableWidth = constraints.maxWidth;
+            final totalSpacing = spacing * (columnCount - 1);
+            final cardWidth = (availableWidth - totalSpacing) / columnCount;
+
+            return Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: [
+                SizedBox(
+                  width: cardWidth,
+                  child: _buildWarrantyCard(
+                    'Expired',
+                    warrantyReport.expiredCount,
+                    Colors.red,
+                    Icons.warning,
+                  ),
+                ),
+                SizedBox(
+                  width: cardWidth,
+                  child: _buildWarrantyCard(
+                    'Expiring in 30 Days',
+                    warrantyReport.expiringSoon30Days,
+                    Colors.orange,
+                    Icons.schedule,
+                  ),
+                ),
+                SizedBox(
+                  width: cardWidth,
+                  child: _buildWarrantyCard(
+                    'Expiring in 60 Days',
+                    warrantyReport.expiringSoon60Days,
+                    Colors.amber,
+                    Icons.access_time,
+                  ),
+                ),
+                SizedBox(
+                  width: cardWidth,
+                  child: _buildWarrantyCard(
+                    'Active Warranties',
+                    warrantyReport.activeWarranties,
+                    Colors.green,
+                    Icons.check_circle,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
         if (warrantyReport.expiringAssets.isNotEmpty) ...[
           const SizedBox(height: 16),
@@ -656,7 +778,23 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
+  Widget _buildWarrantyCardWrapper(int columnCount, Widget child) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final padding = ResponsiveHelper.getPadding(context);
+    final spacing = ResponsiveHelper.getCardSpacing(context);
+    final availableWidth = screenWidth - (padding * 2);
+    final totalSpacing = spacing * (columnCount - 1);
+    final cardWidth = (availableWidth - totalSpacing) / columnCount;
+
+    return SizedBox(
+      width: cardWidth,
+      child: child,
+    );
+  }
+
   Widget _buildWarrantyCard(String title, int count, Color color, IconData icon) {
+    final iconSize = ResponsiveHelper.getIconSize(context);
+    
     return Container(
       padding: const EdgeInsets.all(AppSizes.spacing16),
       decoration: BoxDecoration(
@@ -669,7 +807,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 32),
+          Icon(icon, color: color, size: iconSize),
           const SizedBox(height: 8),
           Text(
             '$count',
